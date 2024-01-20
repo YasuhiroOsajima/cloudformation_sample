@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Sample"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: "dev"
+    AllowedValues:
+      - "dev"
+      - "prod"
+    Description: "Environment"
+
+Conditions:
+  IsProduction: !Equals [!Ref Environment, "prd"]
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc/vpc.yaml
+      Parameters:
+        TagName: !Sub "${Environment}-vpc"
+
+  PrivateSubnet:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc/private/subnet.yaml
+      Parameters:
+        TagName: !Sub "${Environment}-private-subnet"
+        VpcId: !GetAtt VPC.Outputs.VpcId
+      Condition: IsProduction
+
+  PublicSubnet:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc/public/subnet.yaml
+      Parameters:
+        TagName: !Sub "${Environment}-public-subnet"
+        VpcId: !GetAtt VPC.Outputs.VpcId
+
+  EC2Instance:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ec2/ec2.yaml
+      Parameters:
+        EC2TagName: !Sub "${Environment}-ec2"
+        SGTagName: !Sub "${Environment}-sg"
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        KeyName: "test"
+        Subnet: !GetAtt PublicSubnet.Outputs.SubnetID

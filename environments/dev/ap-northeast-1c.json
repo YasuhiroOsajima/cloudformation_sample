@@ -1,0 +1,13 @@
+{
+  "Parameters": {
+    "Environment": "dev",
+    "VPCCiderBlock": "10.1.0.0/16",
+    "AZ": "ap-northeast-1c",
+    "SubnetPrivateCider": "10.1.1.0/24",
+    "SubnetPublicCider": "10.0.2.0/24",
+    "SubnetPublicDestinationCidr": "0.0.0.0/0",
+    "SecurityGroupIngressIP": "0.0.0.0/0",
+    "ImageId": "ami-0a887e401f7654935",
+    "InstanceType": "t2.micro"
+  }
+}

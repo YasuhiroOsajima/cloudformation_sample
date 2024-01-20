@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "EC2 sample"
+
+Parameters:
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Default: "ami-0d5eff06f840b45e9"
+    Description: "AMI ID"
+  InstanceType:
+    Type: String
+    Default: "t2.micro"
+    Description: "Instance Type"
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: "Key Name"
+  Subnet:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Subnet ID"
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC ID"
+  EC2TagName:
+    Type: String
+    Default: "ec2"
+    Description: "Tag Name"
+  SGTagName:
+    Type: String
+    Default: "sg"
+    Description: "Tag Name"
+
+Resources:
+  EC2SG:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: sg.yaml
+      Parameters:
+        VpcId: !Ref VpcId
+        TagName: !Ref SGTagName
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ImageId
+      KeyName: !Ref KeyName
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref Subnet
+          GroupSet:
+            - !GetAtt EC2SG.Outputs.SGID
+      Tags:
+        - Key: Name
+          Value: !Ref EC2TagName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<html><body><h1>Hello World</h1></body></html>" > /var/www/html/index.html
+          echo "Hello World" > /tmp/hello.txt
+          chmod 644 /tmp/hello.txt
+          chown root:root /tmp/hello.txt

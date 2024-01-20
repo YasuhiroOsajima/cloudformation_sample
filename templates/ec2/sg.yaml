@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "SG sample"
+
+Parameters:
+  SecurityGroupIngressIP:
+    Type: String
+    Default: "0.0.0.0/0"
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC ID"
+  TagName:
+    Type: String
+    Default: "sg"
+    Description: "Tag Name"
+
+Resources:
+  EC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "EC2 SG"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SecurityGroupIngressIP
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref SecurityGroupIngressIP
+      Tags:
+        - Key: Name
+          Value: !Ref TagName
+
+Outputs:
+  SGID:
+    Value: !Ref EC2SG
+    Description: "SG ID"

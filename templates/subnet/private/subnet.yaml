@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Private Subnet sample"
+
+Parameters:
+  AZ:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: "ap-northeast-1a"
+  SubnetPrivateCider:
+    Type: String
+    Default: "10.1.1.0/24"
+  TagName:
+    Type: String
+    Default: "private-subnet"
+    Description: "Tag Name"
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC ID"
+
+Resources:
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref SubnetPrivateCider
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Ref TagName
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Ref TagName
+
+  PrivateSubnetTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet
+
+Outputs:
+  SubnetID:
+    Description: "Subnet ID"
+    Value: !Ref PrivateSubnet
